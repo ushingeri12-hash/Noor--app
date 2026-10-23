@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EBF1EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E191A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Noor">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='%235CC4BB'/%3E%3C/svg%3E">
+<title>Noor Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=Young+Serif&display=swap">
+<style>
+:root {
+--bg: #EBF1EF;
+--surface: #FFFFFF;
+--ink: #16292A;
+--muted: #587070;
+--line: #D1DEDB;
+--accent: #1D756F;
+--accent-ink: #FFFFFF;
+--glow: #E9A94B;
+--user-bg: #1D756F;
+--user-ink: #FFFFFF;
+--alert-bg: #FBEED6;
+--alert-ink: #4A3410;
+--orb: #6FA3A0;
+--pulse: 4s;
+--font-display: 'Young Serif', Georgia, serif;
+--font-body: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+:root:not([data-theme="light"]) {
+--bg: #0E191A; --surface: #162526; --ink: #E4EFED; --muted: #93AAA8; --line: #25393A;
+--accent: #5CC4BB; --accent-ink: #06201E; --glow: #F0B85E;
+--user-bg: #1F6F69; --user-ink: #FFFFFF; --alert-bg: #2E2412; --alert-ink: #F2DDB5;
+color-scheme: dark;
+}
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+button, textarea, input { font: inherit; color: inherit; }
+button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app {
+height: 100vh; height: 100dvh; max-width: 640px; margin: 0 auto;
+display: flex; flex-direction: column; gap: 10px;
+padding-left: max(16px, env(safe-area-inset-left, 0px));
+padding-right: max(16px, env(safe-area-inset-right, 0px));
+padding-top: max(12px, env(safe-area-inset-top, 0px));
+padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+}
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.who h1 { font-family: var(--font-display); font-weight: 400; font-size: 1.5rem; line-height: 1.1; margin: 0; }
+.who p { margin: 0; font-size: 0.8rem; color: var(--muted); }
+.orb-sm {
+width: 38px; height: 38px; border-radius: 50%; flex: none;
+background: var(--orb);
+box-shadow: 0 0 0 6px color-mix(in srgb, var(--orb) 25%, transparent);
+animation: pulse var(--pulse) ease-in-out infinite;
+transition: background 1.2s ease, box-shadow 1.2s ease;
+}
+@keyframes pulse { 0%, 100% { transform: scale(0.92); } 50% { transform: scale(1.06); } }
+.pill { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 15px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.pill.help { border-color: var(--glow); }
+.pill.solid { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.panel, .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; font-size: 0.92rem; }
+.panel.alert { background: var(--alert-bg); color: var(--alert-ink); border-color: var(--glow); }
+.panel h2, .card h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; margin: 0 0 8px; }
+.panel p { margin: 0 0 8px; }
+.panel a { color: inherit; font-weight: 700; }
+.small { font-size: 0.85rem; color: var(--muted); margin: 8px 0; }
+.row { display: flex; gap: 8px; }
+.row input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 9px 12px; }
+.views { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.view { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.view.scroll { overflow-y: auto; padding-bottom: 6px; }
+.thread { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 4px 0 8px; }
+.msg { display: flex; flex-direction: column; gap: 3px; max-width: 86%; align-self: flex-start; }
+.bubble { max-width: 86%; padding: 10px 14px; border-radius: 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg .bubble { max-width: 100%; }
+.bubble.noor { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
+.bubble.you { align-self: flex-end; background: var(--user-bg); color: var(--user-ink); border-bottom-right-radius: 6px; }
+.bubble.note { align-self: center; max-width: 94%; background: var(--alert-bg); color: var(--alert-ink); font-size: 0.88rem; border-radius: 12px; }
+.sense-tag { font-size: 0.74rem; color: var(--muted); padding-left: 6px; display: flex; align-items: center; gap: 6px; }
+.sense-tag i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dots { display: inline-flex; gap: 5px; padding: 4px 0; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite ease-in-out; }
+.dots i:nth-child(2) { animation-delay: 0.2s; }
+.dots i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 999px; padding: 7px 13px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+.composer { display: flex; align-items: flex-end; gap: 8px; }
+.composer textarea { flex: 1; min-width: 0; resize: none; max-height: 140px; border: 1px solid var(--line); background: var(--surface); border-radius: 18px; padding: 10px 14px; line-height: 1.4; font-size: 16px; }
+.send { flex: none; width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--accent); color: var(--accent-ink); cursor: pointer; font-weight: 700; font-size: 1.1rem; }
+.send:disabled { opacity: 0.5; cursor: default; }
+.foot { display: flex; justify-content: space-between; gap: 12px; align-items: center; font-size: 0.78rem; color: var(--muted); }
+.link { background: none; border: 0; padding: 4px 0; text-decoration: underline; cursor: pointer; font-size: 0.78rem; color: var(--muted); }
+.moods { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.mood-btn { border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px 2px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600; }
+.mood-btn i { width: 22px; height: 22px; border-radius: 50%; display: block; }
+.mood-btn[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+#chart svg { width: 100%; height: auto; display: block; }
+#chart .grid { stroke: var(--line); stroke-width: 1; }
+#chart .axis { fill: var(--muted); font-size: 9px; font-family: var(--font-body); }
+#chart .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+#chart .dot { fill: var(--accent); }
+#chart .dot.last { fill: var(--glow); }
+.empty { color: var(--muted); font-size: 0.88rem; margin: 6px 0; }
+.feel { display: grid; grid-template-columns: 76px 1fr 24px; align-items: center; gap: 8px; margin: 6px 0; font-size: 0.85rem; }
+.feel .bar { height: 10px; border-radius: 6px; background: var(--bg); overflow: hidden; }
+.feel .bar b { display: block; height: 100%; border-radius: 6px; }
+.feel .n { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.breath { text-align: center; }
+.orb-lg { width: 130px; height: 130px; border-radius: 50%; background: var(--accent); opacity: 0.85; margin: 16px auto; transform: scale(0.65); transition: transform 4s ease-in-out; }
+.orb-lg.in { transform: scale(1); }
+.orb-lg.out { transform: scale(0.65); transition-duration: 6s; }
+.breath .label { font-weight: 700; min-height: 1.5em; margin-bottom: 8px; }
+.steps { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding-top: 4px; border-top: 1px solid var(--line); }
+.tab { border: 0; background: none; padding: 9px 0; font-weight: 700; font-size: 0.92rem; color: var(--muted); border-radius: 12px; cursor: pointer; }
+.tab.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+.orb-sm { animation: none; }
+.orb-lg, .orb-lg.out { transition: none; }
+.dots i { animation: none; opacity: 0.6; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="who">
+      <div class="orb-sm" id="mini-orb" aria-hidden="true"></div>
+      <div>
+        <h1>Noor</h1>
+        <p id="sense">AI companion, not a person or a therapist</p>
+      </div>
+    </div>
+    <button class="pill help" id="btn-help" type="button">Get help</button>
+  </header>
+
+  <section class="panel alert" id="help" hidden aria-label="Help right now">
+    <h2>If you are in danger or thinking of hurting yourself</h2>
+    <p>Call your local emergency number now (999 in Qatar), or go to the nearest emergency room. If you can, tell someone you trust and stay with them.</p>
+    <p>To find a helpline in your country, visit <a href="https://findahelpline.com" target="_blank" rel="noopener">findahelpline.com</a>.</p>
+    <button class="pill" id="help-close" type="button">Close</button>
+  </section>
+
+  <section class="panel" id="gate" hidden aria-label="Passcode">
+    <h2>Enter the app passcode</h2>
+    <p>This copy of Noor is protected. Type the passcode set by the person who installed it.</p>
+    <form id="gate-form" class="row">
+      <input id="gate-input" type="password" autocomplete="current-password" aria-label="Passcode" placeholder="Passcode">
+      <button class="pill solid" type="submit">Unlock</button>
+    </form>
+  </section>
+
+  <div class="views">
+    <!-- CHAT -->
+    <section class="view" id="view-chat">
+      <main class="thread" id="thread" aria-live="polite">
+        <div class="bubble noor">Hi, I'm Noor. I'm here to listen. You can tell me about your day, what is weighing on you, or just talk. What is on your mind right now?</div>
+      </main>
+      <div class="chips" id="chips">
+        <button class="chip" type="button">I had a rough day</button>
+        <button class="chip" type="button">I feel lonely</button>
+        <button class="chip" type="button">I can't sleep</button>
+        <button class="chip" type="button">I'm feeling anxious</button>
+      </div>
+      <form class="composer" id="form">
+        <textarea id="input" rows="1" placeholder="Write anything, in any language" aria-label="Your message" maxlength="2000"></textarea>
+        <button class="send" id="send" type="submit" aria-label="Send">&#8593;</button>
+      </form>
+      <div class="foot">
+        <span>Chats stay on this device.</span>
+        <button class="link" id="clear" type="button">Clear chat</button>
+      </div>
+    </section>
+
+    <!-- MOOD -->
+    <section class="view scroll" id="view-mood" hidden>
+      <div class="card">
+        <h2>How are you feeling right now?</h2>
+        <div class="moods" id="moods"></div>
+        <p class="small" id="checkin-msg" aria-live="polite"></p>
+        <button class="pill" id="talk-mood" type="button" hidden>Talk about it with Noor</button>
+      </div>
+      <div class="card">
+        <h2>Your last 14 days</h2>
+        <div id="chart"></div>
+        <p class="small" id="summary"></p>
+      </div>
+      <div class="card">
+        <h2>Feelings Noor noticed this week</h2>
+        <div id="feelings"></div>
+      </div>
+      <div class="card">
+        <h2>Your data</h2>
+        <p class="small">Everything is saved only on this phone. Deleting removes your chats and mood history for good.</p>
+        <button class="pill" id="wipe" type="button">Delete all my data</button>
+      </div>
+    </section>
+
+    <!-- CALM -->
+    <section class="view scroll" id="view-calm" hidden>
+      <div class="card breath">
+        <h2>Slow breathing</h2>
+        <p class="small">In for 4 seconds, out for 6. Do it a few times.</p>
+        <div class="orb-lg" id="orb" aria-hidden="true"></div>
+        <div class="label" id="breath-label" aria-live="polite">Ready</div>
+        <button class="pill solid" id="breath-btn" type="button">Start</button>
+      </div>
+      <div class="card">
+        <h2>Ground yourself: 5-4-3-2-1</h2>
+        <ol class="steps">
+          <li>Look around and name <b>5</b> things you can see.</li>
+          <li>Notice <b>4</b> things you can touch or feel.</li>
+          <li>Listen for <b>3</b> sounds.</li>
+          <li>Find <b>2</b> things you can smell.</li>
+          <li>Name <b>1</b> thing you can taste, or take one slow sip of water.</li>
+        </ol>
+      </div>
+      <div class="card" id="install-card">
+        <h2>Keep Noor on your phone</h2>
+        <p class="small" id="install-text">On Android: open the Chrome menu and choose Add to Home screen. On iPhone: tap Share, then Add to Home Screen.</p>
+        <button class="pill solid" id="install-btn" type="button" hidden>Install app</button>
+      </div>
+    </section>
+  </div>
+
+  <nav class="tabs" aria-label="Sections">
+    <button type="button" class="tab on" data-view="chat">Talk</button>
+    <button type="button" class="tab" data-view="mood">Mood</button>
+    <button type="button" class="tab" data-view="calm">Calm</button>
+  </nav>
+</div>
+<script>
+(function () {
+  'use strict';
+
+  var K_CHAT = 'noor-chat-v2';
+  var K_MOOD = 'noor-mood-v1';
+  var K_PASS = 'noor-pass';
+  var DEFAULT_SUB = 'AI companion, not a person or a therapist';
+
+  // Color and mood value (1 low to 5 high) for each emotion Noor can notice.
+  var EMO = {
+    happy:   { c: '#E9A94B', v: 5 },
+    calm:    { c: '#3FA69E', v: 4 },
+    hopeful: { c: '#7DB86B', v: 4 },
+    neutral: { c: '#6FA3A0', v: 3 },
+    tired:   { c: '#8497A0', v: 2.5 },
+    stressed:{ c: '#D9784A', v: 2 },
+    anxious: { c: '#9A78C4', v: 2 },
+    lonely:  { c: '#6E7BC0', v: 2 },
+    sad:     { c: '#5B84B8', v: 1.5 },
+    angry:   { c: '#C75B55', v: 2 }
+  };
+  var LEVELS = [
+    { v: 1, label: 'Very low', c: '#5B84B8' },
+    { v: 2, label: 'Low', c: '#8497A0' },
+    { v: 3, label: 'Okay', c: '#6FA3A0' },
+    { v: 4, label: 'Good', c: '#7DB86B' },
+    { v: 5, label: 'Great', c: '#E9A94B' }
+  ];
+  var CRISIS = /(suicid|kill myself|end my life|want to die|wanna die|self[- ]?harm|hurt myself|cut myself|khud ?kushi|jaan de|marna chah|mar jana chah|zindagi khatam)/i;
+
+  function $(id) { return document.getElementById(id); }
+  function lsGet(k, fb) {
+    try { var s = localStorage.getItem(k); return s ? JSON.parse(s) : fb; } catch (e) { return fb; }
+  }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function dayKey(t) {
+    var d = new Date(t);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  function emoOf(name) { return EMO[name] || EMO.neutral; }
+
+  var thread = $('thread'), input = $('input'), form = $('form'), sendBtn = $('send');
+  var chips = $('chips'), help = $('help'), gate = $('gate'), clearBtn = $('clear');
+  var root = document.documentElement;
+
+  var msgs = (lsGet(K_CHAT, []) || []).filter(function (m) {
+    return m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string';
+  }).slice(-80);
+  var moods = (lsGet(K_MOOD, []) || []).filter(function (m) { return m && typeof m.t === 'number'; }).slice(-500);
+  var pass = lsGet(K_PASS, '') || '';
+  var busy = false;
+
+  function saveChat() { lsSet(K_CHAT, msgs.slice(-80)); }
+  function saveMood() { lsSet(K_MOOD, moods.slice(-500)); }
+  function pushMood(e) { moods.push(e); saveMood(); }
+  function scrollDown() { thread.scrollTop = thread.scrollHeight; }
+
+  /* ---------- emotion display ---------- */
+  function applyEmotion(name, intensity) {
+    var e = emoOf(name);
+    var n = Math.min(5, Math.max(1, Number(intensity) || 2));
+    root.style.setProperty('--orb', e.c);
+    root.style.setProperty('--pulse', (6 - n * 0.8).toFixed(1) + 's');
+    $('sense').textContent = name && name !== 'neutral' && EMO[name] ? 'Noor senses: ' + name : DEFAULT_SUB;
+  }
+
+  /* ---------- chat rendering ---------- */
+  function addBubble(kind, text) {
+    var el = document.createElement('div');
+    el.className = 'bubble ' + kind;
+    el.textContent = text;
+    thread.appendChild(el);
+    scrollDown();
+    return el;
+  }
+  function addNote(text) { return addBubble('note', text); }
+  function addAssistant(text, emotion) {
+    var wrap = document.createElement('div');
+    wrap.className = 'msg';
+    var b = document.createElement('div');
+    b.className = 'bubble noor';
+    b.textContent = text;
+    wrap.appendChild(b);
+    if (emotion && emotion !== 'neutral' && EMO[emotion]) {
+      var tag = document.createElement('div');
+      tag.className = 'sense-tag';
+      var dot = document.createElement('i');
+      dot.style.background = EMO[emotion].c;
+      tag.appendChild(dot);
+      tag.appendChild(document.createTextNode('Noor senses: ' + emotion));
+      wrap.appendChild(tag);
+    }
+    thread.appendChild(wrap);
+    scrollDown();
+    return wrap;
+  }
+  function addTyping() {
+    var el = document.createElement('div');
+    el.className = 'bubble noor';
+    el.innerHTML = '<span class="dots" aria-label="Noor is typing"><i></i><i></i><i></i></span>';
+    thread.appendChild(el);
+    scrollDown();
+    return el;
+  }
+
+  function resize() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 140) + 'px';
+  }
+
+  function headers() {
+    return { 'content-type': 'application/json', 'x-passcode': pass };
+  }
+
+  async function send(text) {
+    text = (text || '').trim();
+    if (!text || busy) return;
+    busy = true;
+    sendBtn.disabled = true;
+    chips.hidden = true;
+    input.value = '';
+    resize();
+    msgs.push({ role: 'user', content: text });
+    saveChat();
+    var userEl = addBubble('you', text);
+    if (CRISIS.test(text)) help.hidden = false;
+    var typing = addTyping();
+    try {
+      var res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({
+          messages: msgs.slice(-16).map(function (m) { return { role: m.role, content: m.content }; })
+        })
+      });
+      if (res.status === 401) throw { code: 'passcode' };
+      if (res.status === 429) throw { code: 'slow' };
+      if (!res.ok) throw { code: 'fail' };
+      var data = await res.json();
+      var reply = data && typeof data.reply === 'string' && data.reply ? data.reply : null;
+      if (!reply) throw { code: 'fail' };
+      var emotion = EMO[data.emotion] ? data.emotion : 'neutral';
+      var intensity = Math.min(5, Math.max(1, Number(data.intensity) || 2));
+      typing.remove();
+      addAssistant(reply, emotion);
+      msgs.push({ role: 'assistant', content: reply, emotion: emotion, intensity: intensity });
+      saveChat();
+      applyEmotion(emotion, intensity);
+      pushMood({ t: Date.now(), source: 'chat', emotion: emotion, intensity: intensity });
+      if (data.risk === 'crisis' || data.risk === 'elevated') help.hidden = false;
+      if (data.risk === 'crisis') {
+        addNote('You matter. Please use the help box above or call 999 right now, and tell someone near you.');
+      }
+    } catch (e) {
+      typing.remove();
+      userEl.remove();
+      if (msgs.length && msgs[msgs.length - 1].role === 'user') msgs.pop();
+      saveChat();
+      input.value = text;
+      resize();
+      var code = e && e.code;
+      if (code === 'passcode') {
+        gate.hidden = false;
+        addNote('Enter the passcode above, then send your message again.');
+      } else if (code === 'slow') {
+        addNote('That was a lot at once. Wait a moment, then try again.');
+      } else if (!navigator.onLine) {
+        addNote('You are offline. Connect to the internet and try again.');
+      } else {
+        addNote('Noor could not reply just now. Your message is back in the box. Try again in a moment.');
+      }
+    } finally {
+      busy = false;
+      sendBtn.disabled = false;
+      scrollDown();
+    }
+  }
+
+  form.addEventListener('submit', function (ev) { ev.preventDefault(); send(input.value); });
+  input.addEventListener('input', resize);
+  input.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Enter' && !ev.shiftKey && !window.matchMedia('(pointer: coarse)').matches) {
+      ev.preventDefault();
+      send(input.value);
+    }
+  });
+  Array.prototype.forEach.call(chips.querySelectorAll('.chip'), function (c) {
+    c.addEventListener('click', function () { send(c.textContent); });
+  });
+
+  var clearArmed = false;
+  clearBtn.addEventListener('click', function () {
+    if (!clearArmed) {
+      clearArmed = true;
+      clearBtn.textContent = 'Tap again to clear';
+      setTimeout(function () { clearArmed = false; clearBtn.textContent = 'Clear chat'; }, 4000);
+      return;
+    }
+    msgs = [];
+    saveChat();
+    resetThread();
+    clearArmed = false;
+    clearBtn.textContent = 'Clear chat';
+  });
+  function resetThread() {
+    while (thread.children.length > 1) thread.removeChild(thread.lastChild);
+    chips.hidden = false;
+    applyEmotion('neutral', 2);
+  }
+
+  /* ---------- help and passcode ---------- */
+  $('btn-help').addEventListener('click', function () { help.hidden = !help.hidden; });
+  $('help-close').addEventListener('click', function () { help.hidden = true; });
+  $('gate-form').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var v = $('gate-input').value;
+    if (!v) return;
+    pass = v;
+    lsSet(K_PASS, v);
+    $('gate-input').value = '';
+    gate.hidden = true;
+  });
+
+  /* ---------- tabs ---------- */
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+  function switchView(name) {
+    ['chat', 'mood', 'calm'].forEach(function (n) { $('view-' + n).hidden = n !== name; });
+    tabs.forEach(function (t) { t.classList.toggle('on', t.getAttribute('data-view') === name); });
+    if (name === 'mood') renderMood();
+    if (name !== 'calm') stopBreath();
+    if (name === 'chat') scrollDown();
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { switchView(t.getAttribute('data-view')); });
+  });
+
+  /* ---------- mood check-in ---------- */
+  var lastLevel = null;
+  function buildMoodButtons() {
+    var box = $('moods');
+    LEVELS.forEach(function (lv) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'mood-btn';
+      b.setAttribute('aria-pressed', 'false');
+      var dot = document.createElement('i');
+      dot.style.background = lv.c;
+      b.appendChild(dot);
+      b.appendChild(document.createTextNode(lv.label));
+      b.addEventListener('click', function () {
+        pushMood({ t: Date.now(), source: 'checkin', v: lv.v });
+        lastLevel = lv;
+        Array.prototype.forEach.call(box.children, function (c) { c.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+        $('checkin-msg').textContent = 'Saved. Thank you for checking in.';
+        $('talk-mood').hidden = false;
+        renderMood();
+      });
+      box.appendChild(b);
+    });
+  }
+  $('talk-mood').addEventListener('click', function () {
+    if (!lastLevel) return;
+    switchView('chat');
+    send("I'm feeling " + lastLevel.label.toLowerCase() + ' right now.');
+  });
+
+  function valueOf(m) {
+    if (typeof m.v === 'number') return m.v;
+    return m.emotion && EMO[m.emotion] ? EMO[m.emotion].v : null;
+  }
+
+  function svgEl(name, attrs) {
+    var el = document.createElementNS('http://www.w3.org/2000/svg', name);
+    Object.keys(attrs || {}).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    return el;
+  }
+
+  function renderChart() {
+    var box = $('chart');
+    box.textContent = '';
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var days = [];
+    var index = {};
+    for (var i = 13; i >= 0; i--) {
+      var d = new Date(today);
+      d.setDate(d.getDate() - i);
+      index[dayKey(d)] = days.length;
+      days.push({ date: d, vals: [] });
+    }
+    moods.forEach(function (m) {
+      var k = dayKey(m.t);
+      if (Object.prototype.hasOwnProperty.call(index, k)) {
+        var v = valueOf(m);
+        if (v !== null) days[index[k]].vals.push(v);
+      }
+    });
+    var pts = [];
+    days.forEach(function (d, idx) {
+      if (d.vals.length) {
+        var sum = d.vals.reduce(function (a, b) { return a + b; }, 0);
+        pts.push({ i: idx, v: sum / d.vals.length });
+      }
+    });
+    if (!pts.length) {
+      var p = document.createElement('p');
+      p.className = 'empty';
+      p.textContent = 'Your mood line will appear here after your first check-in or chat.';
+      box.appendChild(p);
+      return;
+    }
+    var W = 320, H = 150, L = 36, R = 10, T = 10, B = 24;
+    var pw = W - L - R, ph = H - T - B;
+    function x(i) { return L + (i / 13) * pw; }
+    function y(v) { return T + ((5 - v) / 4) * ph; }
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Mood over the last 14 days' });
+    [[1, 'Low'], [3, 'Okay'], [5, 'Great']].forEach(function (g) {
+      svg.appendChild(svgEl('line', { class: 'grid', x1: L, x2: W - R, y1: y(g[0]), y2: y(g[0]) }));
+      var t = svgEl('text', { class: 'axis', x: L - 6, y: y(g[0]) + 3, 'text-anchor': 'end' });
+      t.textContent = g[1];
+      svg.appendChild(t);
+    });
+    var letters = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    days.forEach(function (d, idx) {
+      var t = svgEl('text', { class: 'axis', x: x(idx), y: H - 8, 'text-anchor': 'middle' });
+      t.textContent = letters[d.date.getDay()];
+      svg.appendChild(t);
+    });
+    if (pts.length > 1) {
+      svg.appendChild(svgEl('polyline', {
+        class: 'line',
+        points: pts.map(function (q) { return x(q.i).toFixed(1) + ',' + y(q.v).toFixed(1); }).join(' ')
+      }));
+    }
+    pts.forEach(function (q, n) {
+      svg.appendChild(svgEl('circle', {
+        class: 'dot' + (n === pts.length - 1 ? ' last' : ''),
+        cx: x(q.i).toFixed(1), cy: y(q.v).toFixed(1), r: 4
+      }));
+    });
+    box.appendChild(svg);
+  }
+
+  function renderFeelings() {
+    var box = $('feelings');
+    box.textContent = '';
+    var cutoff = Date.now() - 7 * 24 * 3600 * 1000;
+    var counts = {};
+    moods.forEach(function (m) {
+      if (m.source === 'chat' && m.t >= cutoff && m.emotion && m.emotion !== 'neutral' && EMO[m.emotion]) {
+        counts[m.emotion] = (counts[m.emotion] || 0) + 1;
+      }
+    });
+    var list = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; }).slice(0, 5);
+    if (!list.length) {
+      var p = document.createElement('p');
+      p.className = 'empty';
+      p.textContent = 'As you talk with Noor, the feelings she notices will show up here.';
+      box.appendChild(p);
+      return;
+    }
+    var max = counts[list[0]];
+    list.forEach(function (name) {
+      var row = document.createElement('div');
+      row.className = 'feel';
+      var label = document.createElement('span');
+      label.textContent = name;
+      var bar = document.createElement('div');
+      bar.className = 'bar';
+      var fill = document.createElement('b');
+      fill.style.width = Math.round((counts[name] / max) * 100) + '%';
+      fill.style.background = EMO[name].c;
+      bar.appendChild(fill);
+      var n = document.createElement('span');
+      n.className = 'n';
+      n.textContent = counts[name];
+      row.appendChild(label);
+      row.appendChild(bar);
+      row.appendChild(n);
+      box.appendChild(row);
+    });
+  }
+
+  function renderSummary() {
+    var cutoff = Date.now() - 7 * 24 * 3600 * 1000;
+    var week = moods.filter(function (m) { return m.t >= cutoff && valueOf(m) !== null; });
+    var checkins = week.filter(function (m) { return m.source === 'checkin'; }).length;
+    var el = $('summary');
+    if (!week.length) { el.textContent = ''; return; }
+    var avg = week.reduce(function (a, m) { return a + valueOf(m); }, 0) / week.length;
+    el.textContent = 'This week: ' + checkins + ' check-in' + (checkins === 1 ? '' : 's') + ', average mood ' + avg.toFixed(1) + ' out of 5.';
+  }
+
+  function renderMood() {
+    renderChart();
+    renderFeelings();
+    renderSummary();
+  }
+
+  var wipeArmed = false;
+  $('wipe').addEventListener('click', function () {
+    var b = $('wipe');
+    if (!wipeArmed) {
+      wipeArmed = true;
+      b.textContent = 'Tap again to delete everything';
+      setTimeout(function () { wipeArmed = false; b.textContent = 'Delete all my data'; }, 4000);
+      return;
+    }
+    msgs = [];
+    moods = [];
+    lsDel(K_CHAT);
+    lsDel(K_MOOD);
+    resetThread();
+    renderMood();
+    $('checkin-msg').textContent = '';
+    $('talk-mood').hidden = true;
+    wipeArmed = false;
+    b.textContent = 'Delete all my data';
+  });
+
+  /* ---------- breathing ---------- */
+  var breathing = false, breathTimer = null;
+  var orb = $('orb'), blabel = $('breath-label'), bbtn = $('breath-btn');
+  function cycle() {
+    if (!breathing) return;
+    blabel.textContent = 'Breathe in';
+    orb.className = 'orb-lg in';
+    breathTimer = setTimeout(function () {
+      if (!breathing) return;
+      blabel.textContent = 'Breathe out slowly';
+      orb.className = 'orb-lg out';
+      breathTimer = setTimeout(cycle, 6000);
+    }, 4000);
+  }
+  function stopBreath() {
+    breathing = false;
+    clearTimeout(breathTimer);
+    orb.className = 'orb-lg';
+    blabel.textContent = 'Ready';
+    bbtn.textContent = 'Start';
+  }
+  bbtn.addEventListener('click', function () {
+    if (breathing) { stopBreath(); return; }
+    breathing = true;
+    bbtn.textContent = 'Stop';
+    setTimeout(cycle, 50);
+  });
+
+  /* ---------- install ---------- */
+  var deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredInstall = e;
+    $('install-btn').hidden = false;
+    $('install-text').textContent = 'Install Noor so it opens like a normal app from your home screen.';
+  });
+  $('install-btn').addEventListener('click', function () {
+    if (!deferredInstall) return;
+    deferredInstall.prompt();
+    deferredInstall = null;
+    $('install-btn').hidden = true;
+  });
+  window.addEventListener('appinstalled', function () { $('install-card').hidden = true; });
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+    $('install-card').hidden = true;
+  }
+
+  /* ---------- start ---------- */
+  buildMoodButtons();
+  msgs.forEach(function (m) {
+    if (m.role === 'user') addBubble('you', m.content);
+    else addAssistant(m.content, m.emotion);
+  });
+  if (msgs.length) chips.hidden = true;
+  var lastAssistant = null;
+  for (var k = msgs.length - 1; k >= 0; k--) {
+    if (msgs[k].role === 'assistant') { lastAssistant = msgs[k]; break; }
+  }
+  if (lastAssistant) applyEmotion(lastAssistant.emotion, lastAssistant.intensity);
+  else applyEmotion('neutral', 2);
+  scrollDown();
+
+})();
+</script>
+</body>
+</html>

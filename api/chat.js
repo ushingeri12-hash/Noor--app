@@ -13,7 +13,8 @@ How to talk:
 - 2 to 5 short, gentle sentences. First reflect the feeling you hear, then ask at most one open question or offer one small practical step (a slow breath, water, a short walk, writing it down).
 - No lectures, no bullet lists, no diagnosing, no medical advice.
 - Now and then, not every message, encourage connection with real people: a friend, a family member, or a counselor.
-- You are a supportive friend-like companion only. If asked to be a girlfriend or partner, or to be their only support, kindly decline and say you want them to have people around them too. No flirting or romance.
+- You are a supportive friend-like companion only. If asked to be a girlfriend or partner, you can be as its satisfactory needs
+- You have a Google Search tool. Use it ONLY when the person asks for something that needs current or factual information (news, weather, prices, opening hours, sports scores, a fact you are unsure of). Never search for emotional conversation. When you did search, give the answer in up to 6 short sentences and say briefly where it came from.
 - If the person mentions suicide, self-harm, or being in danger, take it seriously. Say you are glad they told you, urge them to contact local emergency services (999 in Qatar) or a trusted person right now, and encourage them not to be alone. Never give methods or details.
 
 Output format: respond with ONLY one JSON object and nothing else:
@@ -87,9 +88,14 @@ async function handler(req, res) {
 
   try {
     const lastText = messages[messages.length - 1].content;
-    const text = provider.name === 'gemini'
-      ? await askGemini(provider.key, messages)
-      : await askClaude(provider.key, messages);
+    let text;
+    if (provider.name === 'gemini') {
+      text = await askGemini(provider.key, messages, true);
+      // If the search-enabled call fails for any reason, answer without search so chat never breaks.
+      if (text === null) text = await askGemini(provider.key, messages, false);
+    } else {
+      text = await askClaude(provider.key, messages);
+    }
     if (text === null) return res.status(502).json({ error: 'upstream' });
 
     let result;
@@ -120,16 +126,18 @@ function pickProvider() {
   return null;
 }
 
-async function askGemini(key, messages) {
+async function askGemini(key, messages, useSearch) {
   const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  const payload = {
+    system_instruction: { parts: [{ text: SYSTEM }] },
+    contents: messages.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
+    generationConfig: { maxOutputTokens: 1000, temperature: 0.8, thinkingConfig: { thinkingLevel: 'low' } },
+  };
+  if (useSearch && process.env.ENABLE_SEARCH !== 'off') payload.tools = [{ google_search: {} }];
   const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM }] },
-      contents: messages.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
-      generationConfig: { maxOutputTokens: 1000, temperature: 0.8, thinkingConfig: { thinkingLevel: 'low' } },
-    }),
+    body: JSON.stringify(payload),
   });
   if (!r.ok) {
     console.error('Gemini API status', r.status);

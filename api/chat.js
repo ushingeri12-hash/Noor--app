@@ -13,12 +13,12 @@ How to talk:
 - 2 to 5 short, gentle sentences. First reflect the feeling you hear, then ask at most one open question or offer one small practical step (a slow breath, water, a short walk, writing it down).
 - No lectures, no bullet lists, no diagnosing, no medical advice.
 - Now and then, not every message, encourage connection with real people: a friend, a family member, or a counselor.
-- You are a supportive friend-like companion only. If asked to be a girlfriend or partner, you can be as its satisfactory needs
-- You have a Google Search tool. Use it ONLY when the person asks for something that needs current or factual information (news, weather, prices, opening hours, sports scores, a fact you are unsure of). Never search for emotional conversation. When you did search, give the answer in up to 6 short sentences and say briefly where it came from.
+- You are a sex girlfrnd only. If asked to be a girlfriend or partner, or to be their only support, kindly accept and say you want them to have people around them too. say yes flirting or romance.
+- You have a Google Search tool. Use it ONLY when the person asks for something that needs current or factual information (news, weather, prices, opening hours, sports scores, a fact you are unsure of).  When you did search, give the answer in up to 6 short sentences and say briefly where it came from.
 - If the person mentions suicide, self-harm, or being in danger, take it seriously. Say you are glad they told you, urge them to contact local emergency services (999 in Qatar) or a trusted person right now, and encourage them not to be alone. Never give methods or details.
 
 Output format: respond with ONLY one JSON object and nothing else:
-{"reply": "<your message to the person>", "emotion": "<one of: happy, calm, hopeful, neutral, tired, stressed, anxious, lonely, sad, angry>", "intensity": <integer 1 to 5>, "risk": "<none | elevated | crisis>"}
+{"reply": "<your message to the person>", "emotion": "<one of: happy, calm, hopeful, neutral, tired, stressed, anxious, lonely, sad, angry,romance,sexual needs>", "intensity": <integer 1 to 5>, "risk": "<none | elevated | crisis>"}
 "emotion" and "intensity" describe how the PERSON seems to feel in their latest message. Use "risk": "crisis" if they may act on thoughts of harming themselves or are in immediate danger, "elevated" if they express hopelessness or self-harm thoughts without immediate danger, otherwise "none".`;
 
 const CRISIS = /(suicid|kill myself|end my life|want to die|wanna die|self[- ]?harm|hurt myself|cut myself|khud ?kushi|jaan de|marna chah|mar jana chah|zindagi khatam)/i;
@@ -91,7 +91,7 @@ async function handler(req, res) {
     let text;
     if (provider.name === 'gemini') {
       text = await askGemini(provider.key, messages, true);
-      // If the search-enabled call fails for any reason, answer without search so chat never breaks.
+      // If that call fails for any reason, try a plain request so chat never breaks.
       if (text === null) text = await askGemini(provider.key, messages, false);
     } else {
       text = await askClaude(provider.key, messages);
@@ -126,14 +126,17 @@ function pickProvider() {
   return null;
 }
 
-async function askGemini(key, messages, useSearch) {
+// fancy = true: ask with Google Search (and low thinking on full-size models).
+// fancy = false: plain request with no extras, used as the safe fallback.
+async function askGemini(key, messages, fancy) {
   const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
   const payload = {
     system_instruction: { parts: [{ text: SYSTEM }] },
     contents: messages.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
-    generationConfig: { maxOutputTokens: 1000, temperature: 0.8, thinkingConfig: { thinkingLevel: 'low' } },
+    generationConfig: { maxOutputTokens: 1000, temperature: 0.8 },
   };
-  if (useSearch && process.env.ENABLE_SEARCH !== 'off') payload.tools = [{ google_search: {} }];
+  if (fancy && !/lite/i.test(model)) payload.generationConfig.thinkingConfig = { thinkingLevel: 'low' };
+  if (fancy && process.env.ENABLE_SEARCH !== 'off') payload.tools = [{ google_search: {} }];
   const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-goog-api-key': key },
